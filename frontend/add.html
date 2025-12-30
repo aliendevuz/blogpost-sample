@@ -243,17 +243,15 @@
                 errorMessage.style.display = 'none';
                 successMessage.style.display = 'none';
 
-                const response = await fetch('http://localhost:8000/blogs', {
+                const response = await fetch('https://blogpost-sample-uov6.onrender.com/blogs', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        id: 0, // API bu o'zini belgilaydi
                         title: title,
                         content: content,
-                        author: author,
-                        created_at: new Date().toISOString()
+                        author: author
                     })
                 });
 
