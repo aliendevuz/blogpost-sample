@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yangi Blog Qo'shish</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #764ba2;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .cancel-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .cancel-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .success-message {
+            display: none;
+            background: #4caf50;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .error-message {
+            display: none;
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>➕ Yangi Blog Qo'shish</h1>
+            <a href="/frontend/index.html" class="back-btn">← Orqaga</a>
+        </header>
+
+        <div class="form-container">
+            <div id="success-message" class="success-message">
+                ✅ Blog muvafaqqiyatli qo'shildi! Sahifa qayta yuklanyapti...
+            </div>
+            <div id="error-message" class="error-message"></div>
+            <div id="loading" class="loading">⏳ Saqlanmoqda...</div>
+
+            <form id="blog-form">
+                <div class="form-group">
+                    <label for="title">Blog Nomi *</label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        name="title" 
+                        placeholder="Masalan: FastAPI bilan API qurish" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="content">Mazmun *</label>
+                    <textarea 
+                        id="content" 
+                        name="content" 
+                        placeholder="Blog mazmunini shu yerga yozing..." 
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="author">Muallif *</label>
+                    <input 
+                        type="text" 
+                        id="author" 
+                        name="author" 
+                        placeholder="Masalan: Ali" 
+                        required
+                    >
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="submit-btn">Qo'shish</button>
+                    <a href="/frontend/index.html" style="display: flex; align-items: center; justify-content: center;" class="cancel-btn">Bekor qilish</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('blog-form');
+        const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const loadingDiv = document.getElementById('loading');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const author = document.getElementById('author').value;
+
+            if (!title.trim() || !content.trim() || !author.trim()) {
+                showError('Barcha maydonlar to\'ldirilishi kerak!');
+                return;
+            }
+
+            try {
+                loadingDiv.style.display = 'block';
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+
+                const response = await fetch('http://localhost:8000/blogs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        id: 0, // API bu o'zini belgilaydi
+                        title: title,
+                        content: content,
+                        author: author,
+                        created_at: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('API xatosi!');
+                }
+
+                const newBlog = await response.json();
+                console.log('Yangi blog qo\'shildi:', newBlog);
+
+                loadingDiv.style.display = 'none';
+                successMessage.style.display = 'block';
+
+                // 2 soniyadan keyin bosh sahifaga qaytish
+                setTimeout(() => {
+                    window.location.href = '/frontend/index.html';
+                }, 2000);
+
+            } catch (error) {
+                console.error('Xato:', error);
+                loadingDiv.style.display = 'none';
+                showError('Blog qo\'shish xatosi. Iltimos, backend server ishga tushirilganini tekshiring.');
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

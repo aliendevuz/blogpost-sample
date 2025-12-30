@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        header button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        header button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .blogs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border-left: 5px solid #667eea;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.2);
+        }
+
+        .blog-card h2 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        .blog-card .content {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .blog-card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+            margin-top: 15px;
+        }
+
+        .blog-card .author {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .blog-card .date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            padding: 40px;
+        }
+
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .blogs-container {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Blog Portal</h1>
+            <button onclick="window.location.href='add.html'">Blog qo'shish</button>
+        </header>
+
+        <div id="blogs-container" class="blogs-container">
+            <div class="loading">⏳ Bloglar yuklanmoqda...</div>
+        </div>
+    </div>
+
+    <script>
+        // API dan bloglarni olish
+        async function loadBlogs() {
+            try {
+                const response = await fetch('http://localhost:8000/blogs');
+                if (!response.ok) throw new Error('API xatosi!');
+                
+                const blogs = await response.json();
+                displayBlogs(blogs);
+            } catch (error) {
+                console.error('Xato:', error);
+                document.getElementById('blogs-container').innerHTML = `
+                    <div class="error">
+                        ❌ Bloglarni yuklab bo'lmadi. Iltimos, backend server ishga tushirilganini tekshiring.
+                    </div>
+                `;
+            }
+        }
+
+        // Bloglarni HTML da ko'rsatish
+        function displayBlogs(blogs) {
+            const container = document.getElementById('blogs-container');
+            container.innerHTML = '';
+
+            blogs.forEach(blog => {
+                const date = new Date(blog.created_at).toLocaleDateString('uz-UZ');
+                const blogCard = document.createElement('div');
+                blogCard.className = 'blog-card';
+                blogCard.innerHTML = `
+                    <h2>${blog.title}</h2>
+                    <p class="content">${blog.content}</p>
+                    <div class="meta">
+                        <span class="author">✍️ ${blog.author}</span>
+                        <span class="date">📅 ${date}</span>
+                    </div>
+                `;
+                container.appendChild(blogCard);
+            });
+        }
+
+        // Sahifa yuklanganda bloglarni olish
+        window.addEventListener('load', loadBlogs);
+    </script>
+</body>
+</html>
