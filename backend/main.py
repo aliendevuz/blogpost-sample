@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 from pydantic import BaseModel
 import sqlite3
@@ -25,49 +25,71 @@ class Blog(BaseModel):
     author: str
     created_at: str
 
+
+class BlogCreate(BaseModel):
+    title: str
+    content: str
+    author: str
+
 # Database faylining manzili
-DATABASE = "blogs.db"
+# Render'da working directory o'zgarishi mumkin, shuning uchun absolute yo'lga yaqinroq qilamiz.
+DATABASE = os.getenv(
+    "DATABASE_PATH",
+    os.path.join(os.path.dirname(__file__), "blogs.db"),
+)
 
 # Databaseni tayyorlash
-def init_database():
-    """Database va blogs jadvalni yaratish"""
-    if not os.path.exists(DATABASE):
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-        
-        # Blogs jadvalini yaratish
-        cursor.execute('''
-            CREATE TABLE blogs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                content TEXT NOT NULL,
-                author TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-        ''')
-        
-        # 3 ta sample blogni qo'shish
+def init_database() -> None:
+    """Database va blogs jadvalni yaratish (idempotent)"""
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    # Blogs jadvalini yaratish
+    cursor.execute(
+        '''
+        CREATE TABLE IF NOT EXISTS blogs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            author TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        '''
+    )
+
+    # 3 ta sample blogni faqat bo'sh bo'lsa qo'shamiz
+    cursor.execute('SELECT COUNT(*) FROM blogs')
+    (count,) = cursor.fetchone()
+    if count == 0:
         sample_blogs = [
-            ("FastAPI bilan RESTful API qurish", 
-             "FastAPI - bu zamonaviy va tez Python web framework. Unda type hints va async/await qo'llab-quvvatlanadi.", 
-             "Sevara"),
-            ("Python dasturlashni o'rganish", 
-             "Python - bu eng oson o'rganish uchun mos bo'lgan dasturlash tili. Uni har xil sohalarda ishlatish mumkin.", 
-             "Ali"),
-            ("Veb sayt qurish asoslar", 
-             "Frontend va backend qo'llab-quvvatlovchi naqshni tushunish veb sayt qurish uchun muhim.", 
-             "Nodira")
+            (
+                "FastAPI bilan RESTful API qurish",
+                "FastAPI - bu zamonaviy va tez Python web framework. Unda type hints va async/await qo'llab-quvvatlanadi.",
+                "Sevara",
+            ),
+            (
+                "Python dasturlashni o'rganish",
+                "Python - bu eng oson o'rganish uchun mos bo'lgan dasturlash tili. Uni har xil sohalarda ishlatish mumkin.",
+                "Ali",
+            ),
+            (
+                "Veb sayt qurish asoslar",
+                "Frontend va backend qo'llab-quvvatlovchi naqshni tushunish veb sayt qurish uchun muhim.",
+                "Nodira",
+            ),
         ]
-        
-        for title, content, author in sample_blogs:
-            cursor.execute('''
-                INSERT INTO blogs (title, content, author, created_at) 
-                VALUES (?, ?, ?, ?)
-            ''', (title, content, author, datetime.now().isoformat()))
-        
-        conn.commit()
-        conn.close()
-        print("✅ Database yaratildi va 3 ta sample blog qo'shildi!")
+
+        now = datetime.now().isoformat()
+        cursor.executemany(
+            '''
+            INSERT INTO blogs (title, content, author, created_at)
+            VALUES (?, ?, ?, ?)
+            ''',
+            [(t, c, a, now) for (t, c, a) in sample_blogs],
+        )
+
+    conn.commit()
+    conn.close()
 
 # Database bilan ishlash funksiyalari
 def get_db_connection():
@@ -75,6 +97,12 @@ def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+@app.on_event("startup")
+def _startup() -> None:
+    # Uvicorn/Render import qilganda ham DB tayyor bo'lishi uchun
+    init_database()
 
 # Barcha bloglarni olish (GET - http://localhost:8000/blogs)
 @app.get("/blogs", response_model=List[Blog])
@@ -106,19 +134,19 @@ async def get_blog(blog_id: int):
     row = cursor.fetchone()
     conn.close()
     
-    if row:
-        return Blog(
-            id=row['id'],
-            title=row['title'],
-            content=row['content'],
-            author=row['author'],
-            created_at=row['created_at']
-        )
-    return {"error": "Blog topilmadi"}
+    if not row:
+        raise HTTPException(status_code=404, detail="Blog topilmadi")
+    return Blog(
+        id=row['id'],
+        title=row['title'],
+        content=row['content'],
+        author=row['author'],
+        created_at=row['created_at']
+    )
 
 # Yangi blog qo'shish
 @app.post("/blogs", response_model=Blog)
-async def create_blog(blog: Blog):
+async def create_blog(blog: BlogCreate):
     """Yangi blog qo'shadi"""
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -144,6 +172,5 @@ async def create_blog(blog: Blog):
 # Serverni ishga tushirish
 if __name__ == "__main__":
     import uvicorn
-    init_database()
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", "8000")))
 
