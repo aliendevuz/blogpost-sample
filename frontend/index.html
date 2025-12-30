@@ -146,7 +146,7 @@
     <div class="container">
         <header>
             <h1>📝 Blog Portal</h1>
-            <button onclick="window.location.href='add.html'">Blog qo'shish</button>
+            <button onclick="window.location.href='/add'">Blog qo'shish</button>
         </header>
 
         <div id="blogs-container" class="blogs-container">
@@ -155,10 +155,13 @@
     </div>
 
     <script>
+
+        const API = "https://blogpost-sample-uov6.onrender.com/"
+
         // API dan bloglarni olish
         async function loadBlogs() {
             try {
-                const response = await fetch('https://blogpost-sample-uov6.onrender.com/blogs');
+                const response = await fetch(API + 'blogs');
                 if (!response.ok) throw new Error('API xatosi!');
                 
                 const blogs = await response.json();
